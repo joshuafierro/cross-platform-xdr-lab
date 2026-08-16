@@ -1,6 +1,6 @@
 # EDR Detection Lab
 
-Demonstrating the deployment and configuration of a virtualized Wazuh EDR architecture (Manager and endpoint agents) across distributed VMs to monitor application infrastructure and capture real-time operating system telemetry.
+Demonstrating the deployment and configuration of a virtualized Wazuh EDR architecture (Manager and endpoint agents) across distributed Virtual Machines (VMs) to monitor application infrastructure and capture real-time operating system telemetry.
 
 ## Technologies
 
@@ -10,5 +10,13 @@ Demonstrating the deployment and configuration of a virtualized Wazuh EDR archit
 - Ubuntu Linux
 - CentOS Linux
 - Docker
-- FailedIn
-- OpenVas
+- [FailedIn](link-to-repo)
+- Nuclei
+
+## Network Topology & EDR Flow Diagram
+
+![Network Topology and EDR Flow Diagram](./docs/diagram.png)
+
+## Docs
+
+- [Technical Build Guide](link-to-writeup)
