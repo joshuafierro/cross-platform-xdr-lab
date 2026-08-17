@@ -2,9 +2,9 @@
 
 
 
-## Setting up Virtual Machines (VMs)
+## Setting Up Virtual Machines (VMs)
 
-The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions (Distros) which utilized few resources but were highly compatible with the EDR/SIEM of choice and other common security tools. 
+The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions which utilized few resources but were highly compatible with the EDR/SIEM of choice and other common security tools. 
 
 Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the EDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
 
@@ -58,19 +58,29 @@ The script for executing the application was slightly altered to force it to run
 
 The vulnerable web application running is great however its logs need to be accessible in order to fulfill the purpose of this experiment. The next step was to alter the vulnerable web application to write logs to a file on the server and make sure that the user space for the wazuh manager had permission to read and access the log file and directory it is saved within.
 
-Raw flask logs are not natively supported by Wazuh so we needed to create a decoder which will hold a regex that identified the Flask HTTP logs. Additionally rules were created/defined to trigger alerts for event logs. Specific rules were created to catch generic 404 and 500 errors as well under their own respective ids. 
+Raw flask logs are not natively supported by Wazuh so we needed to create a decoder which will hold a regex that identified the Flask HTTP logs. Rules were also created/defined to trigger alerts for Flask event logs. 
+
+![Screenshots of Flask Log Rules]()
 
 Once created and saved the next step was to test the decoder with the native **wazuh-logtest** found in `/var/ossec/bin/wazuh-logtest`. It requires a sample to test the decoder against. This was obtained from the running app with the following command: 
 
-`tail -n 1 /var/log/flask/access.log`
+```bash
+tail -n 1 /var/log/flask/access.log
+```
 
 Once the test passed all that was left was to restart the manager: 
 
-`systemctl restart wazuh-manager`
+```bash
+systemctl restart wazuh-manager
+```
+
+Additionally specific rules were created to catch generic 404 and 500 errors along with common injection attacks such as Cross Site Scripting and SQLi under their own respective ids.
+
+![Screenshots of Rules]()
 
 
 
-## Analyzing Logs and Running Attacks Against Endpoint
+## Analyzing Logs and Running Attacks Against Endpoints
 
 Once logs were being ingested by the agent from the Flask application I proceeded to run manual attacks against the web application. The first of which was a Reflective Cross Site Scripting attack (XSS). 
 
@@ -88,7 +98,7 @@ This simple search returned the log containing the attack:
 
 Tests for benign 404 errors was conducted to see if these rules were being picked up as well. Searching for a 404 error returned the expected log: 
 
-```
+```bash
 192.168.68.130 - - [14/Aug/2026 22:17:35] "GET /testnotfound HTTP/1.1" 404 -
 ```
 
