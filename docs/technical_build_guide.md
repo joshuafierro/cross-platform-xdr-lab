@@ -4,7 +4,9 @@
 
 ## Setting up Virtual Machines (VMs)
 
-The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions (Distros) which utilized few resources but were highly compatible with the EDR/SIEM of choice and other common security tools. Thus **Ubuntu** was chosen as an endpoint device  (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the EDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
+The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions (Distros) which utilized few resources but were highly compatible with the EDR/SIEM of choice and other common security tools. 
+
+Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the EDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
 
 ### Virtual Machine Specifications 
 
@@ -18,9 +20,29 @@ The genesis of this project began with scaffolding three virtual machines which 
 
 ## EDR/XDR/SIEM Scaffolding
 
-Since the objective of this experiment includes the creation of a EDR/XDR/SIEM Detection environment it was imperative to choose an appropriate EDR/XDR/SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Sentinel was ruled out as possible solution. That left Splunk and Wazuh as possible tools. At the time of writing Splunk is a Free solution up to a point. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. This left [Wazuh](https://wazuh.com/), an open source solution that "unifies XDR and SIEM protection by collecting deep endpoint telemetry, network logs, and cloud data into a single rule engine for cross-domain correlation and automated response". It was not only promising but would deliver the functionality needed at no cost. 
+Since the objective of this experiment includes the creation of a EDR/XDR/SIEM Detection environment it was imperative to choose an appropriate EDR/XDR/SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Sentinel was ruled out as possible solution. That left Splunk and Wazuh as possible tools. At the time of writing Splunk is a free solution up to a point. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. 
+
+This left [Wazuh](https://wazuh.com/), an open source solution that "unifies XDR and SIEM protection by collecting deep endpoint telemetry, network logs, and cloud data into a single rule engine for cross-domain correlation and automated response". It was not only promising but would deliver the functionality needed at no cost.
 
 ### Deploying Agents
+
+The creation and deployment of agents was surprisingly straightforward and intuitive. The steps for both Linux and Windows based Wazuh agents were effectively identical: 
+
+1. Choose the OS that the agent is being deployed (Linux/Windows/Mac).
+2. Enter the host IP address of the Wazuh Manager.
+3. (Optional) Give the agent a unique name.
+4. Run the provided commands on the endpoint server. 
+
+Once both were complete the agents could be observed within the Wazuh Central Management Dashboard along with the logs and telemetry collected from both endpoints. The status of the agents could also be seen (e.g. Connected or Disconnected). Another option for checking the status of agents is by running the following commands on their respective command lines:
+
+```
+systemctl status wazuh-agent ## Linux
+sc query wazuh-agent         ## Windows   
+```
+
+
+
+> Note: For Linux agents it is recommended by Wuzuh to disable updates to the Wazuh repository to prevent accidental upgrades. This is because compatibility between the agent and manager is "guaranteed" when the manager version is later than or equal to that of the agent.
 
 
 
