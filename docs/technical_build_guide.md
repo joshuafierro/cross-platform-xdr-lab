@@ -4,9 +4,9 @@
 
 ## Setting Up Virtual Machines (VMs)
 
-The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions which utilized few resources but were highly compatible with the EDR/SIEM of choice and other common security tools. 
+The genesis of this project began with scaffolding three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions which utilized few resources but were highly compatible with the XDR/SIEM of choice and other common security tools. 
 
-Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the EDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
+Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the XDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
 
 ### Virtual Machine Specifications 
 
@@ -18,9 +18,9 @@ Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulner
 
 ![Network Topology and XDR/SEIM Flow Diagram](../docs/diagram.png)
 
-## EDR/XDR/SIEM Scaffolding
+## XDR/SIEM Scaffolding
 
-Since the objective of this experiment includes the creation of a EDR/XDR/SIEM Detection environment it was imperative to choose an appropriate EDR/XDR/SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Sentinel was ruled out as possible solution. That left Splunk and Wazuh as possible tools. At the time of writing Splunk is a free solution up to a point. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. 
+Since the objective of this experiment includes the creation of a XDR/SIEM Detection environment it was imperative to choose an appropriate XDR/SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Defender/Sentinel was ruled out as possible solution. That left Splunk and Wazuh as possible tools. At the time of writing Splunk is a limited free SIEM solution. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. 
 
 This left [Wazuh](https://wazuh.com/), an open source solution that "unifies XDR and SIEM protection by collecting deep endpoint telemetry, network logs, and cloud data into a single rule engine for cross-domain correlation and automated response". It was not only promising but would deliver the functionality needed at no cost.
 
