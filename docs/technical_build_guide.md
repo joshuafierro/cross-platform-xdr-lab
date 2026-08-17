@@ -52,7 +52,7 @@ Though **Windows Event Logs** offer a baseline view, it can fail to capture the 
 - **Network and File Monitoring**: Captures network connections and file creation time changes that Windows Event logs might miss, enhancing detection of data exfiltration or persistence techniques. 
 - **Advanced Telemetry**: Records events like **registry modifications**, **driver/DLL loading**, and **process injection** such as `CreateRemoteThread`(commonly utilized in [T1055.001](https://attack.mitre.org/techniques/T1055/001/)), easing the identification of stealthier attack vectors. 
 
-Armed with the above intuition it becomes obvious as to why installing and Configure Sysmon on the Windows machine is imperative.
+Armed with the above intuition it becomes obvious as to why installing and configuring Sysmon on the Windows machine is imperative.
 
 ![Sysmon](../assets/windows_event_log.png)
 

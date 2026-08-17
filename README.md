@@ -11,7 +11,6 @@ Demonstrating the deployment and configuration of a virtualized Wazuh XDR/SIEM a
 - CentOS Linux
 - Docker
 - [FailedIn](link-to-repo)
-- Nuclei
 
 ## Network Topology & XDR Flow Diagram
 
@@ -19,4 +18,4 @@ Demonstrating the deployment and configuration of a virtualized Wazuh XDR/SIEM a
 
 ## Docs
 
-- [Technical Build Guide](../docs/technical_build_guide.md)
+- [Technical Build Guide](docs/technical_build_guide.md)
