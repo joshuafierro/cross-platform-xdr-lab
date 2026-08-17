@@ -1,4 +1,4 @@
-# Full Stack XDR (Extended Detection & Response) Lab
+# Cross-Platform XDR Lab
 
 Demonstrating the deployment and configuration of a virtualized Wazuh XDR/SIEM architecture (Manager and endpoint agents) across distributed Virtual Machines (VMs) to monitor application infrastructure and capture real-time operating system telemetry.
 
