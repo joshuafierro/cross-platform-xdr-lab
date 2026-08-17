@@ -137,7 +137,7 @@ Additionally specific rules were created to catch generic 404 and 500 errors alo
 
 
 
-## Analyzing Logs and Running Attacks Against Endpoints
+## Detection Engineering & Testing
 
 Once logs were being ingested by the agent from the Flask application I proceeded to run manual attacks against the web application from a separate VM. The first of which was a Reflective Cross Site Scripting attack (XSS). 
 
