@@ -44,6 +44,20 @@ sc query wazuh-agent         ## Windows
 
 ![Final Result After Agents Deployed](../assets/agent_dashboard.png)
 
+### Windows System Monitor (Sysmon) Configuration
+
+Though **Windows Event Logs** offer a baseline view, it can fail to capture the granular details necessary for detecting modern, sophisticated threats. Adding [**Sysmon**](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon) provides the Wazuh agent rich, structured data required to detect post-exploitation activities and advanced persistent threats that default logging cannot reveal:
+
+- **Process Visibility**: Logs detailed process creation events, including parent-child relationships, command-line arguments, and file hashes, which are key to identifying suspicious execution chains and "living-off-the-land" techniques. 
+- **Network and File Monitoring**: Captures network connections and file creation time changes that Windows Event logs might miss, enhancing detection of data exfiltration or persistence techniques. 
+- **Advanced Telemetry**: Records events like **registry modifications**, **driver/DLL loading**, and **process injection** such as `CreateRemoteThread`(commonly utilized in [T1055.001](https://attack.mitre.org/techniques/T1055/001/)), easing the identification of stealthier attack vectors. 
+
+Armed with the above intuition it becomes obvious as to why installing and Configure Sysmon on the Windows machine is imperative.
+
+![Sysmon](../assets/windows_event_log.png)
+
+![Ingesting Sysmon Logs](../assets/ingesting_sysmon_logs.png)
+
 ## Deploying Vulnerable Application on Endpoint A
 
 In this phase the intentionally vulnerable web application I had previously developed was deployed to the Ubuntu endpoint. Here it will be tested against for the purpose of simulating a live enterprise web application. 
@@ -159,3 +173,25 @@ Tests for benign 404 errors was conducted to see if these rules were being picke
 192.x.x.x - - [14/Aug/2026 22:17:35] "GET /testnotfound HTTP/1.1" 404 -
 ```
 
+![caught 404 error](../assets/404_caught.png)
+
+### Detecting Suspicious PowerShell Spawn
+
+Configuring the following rule allows for the detection of suspicious processes utilizing PowerShell:
+
+```  xml
+<group name="sysmon,">
+  <rule id="255000" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="sysmon.image">\\powershell.exe||\\.ps1||\\.ps2</field>
+    <description>Sysmon - Event 1: Bad exe: $(sysmon.image)</description>
+    <group>sysmon_event1,powershell_execution,</group>
+   </rule>
+</group>
+```
+
+
+
+![Wazuh Log of Suspicious Powershell Spawn ](../assets/mal_powershell_log.png)
+
+ ![Log Details of Suspicious Powershell Spawn](../assets/mal_powershell_log_details.png)
