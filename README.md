@@ -15,7 +15,7 @@ Demonstrating the deployment and configuration of a virtualized Wazuh XDR/SIEM a
 
 ## Network Topology & XDR Flow Diagram
 
-![Network Topology and EDR Flow Diagram](./docs/diagram.png)
+![Network Topology and EDR Flow Diagram](./assets/diagram.png)
 
 ## Docs
 
