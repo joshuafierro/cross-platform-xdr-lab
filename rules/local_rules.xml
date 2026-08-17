@@ -1,0 +1,56 @@
+<!-- Local rules -->
+
+<!-- Modify it at your will. -->
+<!-- Copyright (C) 2015, Wazuh Inc. -->
+
+<!-- Example -->
+<group name="local,syslog,sshd,">
+
+  <!--
+  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
+  -->
+  <rule id="100001" level="5">
+    <if_sid>5716</if_sid>
+    <srcip>1.1.1.1</srcip>
+    <description>sshd: authentication failed from IP 1.1.1.1.</description>
+    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
+  </rule>
+
+  <rule id="100002" level="3">
+    <decoded_as>flask-access</decoded_as>
+    <description>Flask application access log entry detected.</description>
+  </rule>
+
+  <!-- Catch 404 Page Not Found Errors -->
+  <rule id="100003" level="5">
+    <if_sid>100002</if_sid>
+    <id>^404</id>
+    <description>Flask App: Page Not Found (404 Error).</description>
+    <group>web,app_vulnerability,</group>
+  </rule>
+
+  <!-- Catch 500 Internal Server Errors -->
+  <rule id="100004" level="8">
+    <if_sid>100002</if_sid>
+    <id>^500</id>
+    <description>Flask App: Internal Server Error (500 Crash).</description>
+    <group>web,service_error,</group>
+  </rule>
+
+<!-- Catch Potential XSS Attack -->
+  <rule id="100050" level="10">
+    <if_sid>100002</if_sid>
+    <match type="pcre2">(?i)(?:%3C|&lt;)script(?!%3E|&gt;)[^&gt;]*(?:%3E|&gt;)|javascript\s*:|(?:alert|print|console)\s*\(.*?\)</match>
+    <description>Cross-Site Scripting (XSS) attack pattern or payload function detected.</description>
+    <group>web,attack,t1190,</group>
+  </rule>
+
+<!-- Catch Potential SQLi Attack -->
+  <rule id="100060" level="10">
+    <if_sid>100002</if_sid>
+    <regex type="pcre2">(?i)\s+union\s+(all\s+)?select|/\*.*?\*/|'?\s*or\s+[^=]+=\s*[^=\s]+|'?\s*or\s+'[^']+'\s*=\s*'[^']+'|--|\s+drop\s+table|\s+insert\s+into</regex>
+    <description>SQL Injection (SQLi) attack pattern detected in web request.</description>
+    <group>attack,web,t1190,</group>
+  </rule>
+
+</group>

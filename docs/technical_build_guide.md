@@ -16,7 +16,7 @@ Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulner
 | Windows 11       | 4GB  | 64GB    |
 | CentOS           | 10GB | 75GB    |
 
-
+![Network Topology and XDR/SEIM Flow Diagram](../docs/diagram.png)
 
 ## EDR/XDR/SIEM Scaffolding
 
@@ -40,17 +40,15 @@ systemctl status wazuh-agent ## Linux
 sc query wazuh-agent         ## Windows   
 ```
 
-
-
 > Note: For Linux agents it is recommended by Wuzuh to disable updates to the Wazuh repository to prevent accidental upgrades. This is because compatibility between the agent and manager is "guaranteed" when the manager version is later than or equal to that of the agent.
 
-
+![Final Result After Agents Deployed](../assets/agent_dashboard.png)
 
 ## Deploying Vulnerable Application on Endpoint A
 
 In this phase the intentionally vulnerable web application I had previously developed was deployed to the Ubuntu endpoint. Here it will be tested against for the purpose of simulating a live enterprise web application. 
 
-The script for executing the application was slightly altered to force it to run on 0.0.0.0 so it could be accessed by the greater local network. 
+The script for executing the application was slightly altered to force it to run on 0.0.0.0 so it could be accessed by the greater local network.
 
 
 
@@ -60,7 +58,12 @@ The vulnerable web application running is great however its logs need to be acce
 
 Raw flask logs are not natively supported by Wazuh so we needed to create a decoder which will hold a regex that identified the Flask HTTP logs. Rules were also created/defined to trigger alerts for Flask event logs. 
 
-![Screenshots of Flask Log Rules]()
+```xml
+ <rule id="100002" level="3">
+    <decoded_as>flask-access</decoded_as>
+    <description>Flask application access log entry detected.</description>
+  </rule>
+```
 
 Once created and saved the next step was to test the decoder with the native **wazuh-logtest** found in `/var/ossec/bin/wazuh-logtest`. It requires a sample to test the decoder against. This was obtained from the running app with the following command: 
 
@@ -74,9 +77,45 @@ Once the test passed all that was left was to restart the manager:
 systemctl restart wazuh-manager
 ```
 
-Additionally specific rules were created to catch generic 404 and 500 errors along with common injection attacks such as Cross Site Scripting and SQLi under their own respective ids.
+Additionally specific rules were created to catch generic 404 and 500 errors along with common injection attacks such as Cross Site Scripting and SQL Injection (SQLi) under their own respective ids.
 
-![Screenshots of Rules]()
+```xml
+  <!-- Catch 404 Page Not Found Errors -->
+  <rule id="100003" level="5">
+    <if_sid>100002</if_sid>
+    <id>^404</id>
+    <description>Flask App: Page Not Found (404 Error).</description>
+    <group>web,app_vulnerability,</group>
+  </rule>
+
+  <!-- Catch 500 Internal Server Errors -->
+  <rule id="100004" level="8">
+    <if_sid>100002</if_sid>
+    <id>^500</id>
+    <description>Flask App: Internal Server Error (500 Crash).</description>
+    <group>web,service_error,</group>
+  </rule>
+```
+
+
+
+```xml
+<!-- Catch Potential XSS Attack -->
+  <rule id="100050" level="10">
+    <if_sid>100002</if_sid>
+    <match type="pcre2">(?i)(?:%3C|&lt;)script(?!%3E|&gt;)[^&gt;]*(?:%3E|&gt;)|javascript\s*:|(?:alert|print|console)\s*\(.*?\)</match>
+    <description>Cross-Site Scripting (XSS) attack pattern or payload function detected.</description>
+    <group>web,attack,t1190,</group>
+  </rule>
+
+<!-- Catch Potential SQLi Attack -->
+  <rule id="100060" level="10">
+    <if_sid>100002</if_sid>
+    <regex type="pcre2">(?i)\s+union\s+(all\s+)?select|/\*.*?\*/|'?\s*or\s+[^=]+=\s*[^=\s]+|'?\s*or\s+'[^']+'\s*=\s*'[^']+'|--|\s+drop\s+table|\s+insert\s+into</regex>
+    <description>SQL Injection (SQLi) attack pattern detected in web request.</description>
+    <group>attack,web,t1190,</group>
+  </rule>
+```
 
 
 
@@ -96,9 +135,23 @@ This simple search returned the log containing the attack:
 <img src="" onerror=alert(1) />
 ```
 
+![XSS Caught](../assets/xss_caught.png)
+
+Alerting rules were tested for other injection attacks that were carried out such as SQLi. As expected they were also caught by the agent:
+
+![Caught SQLi Attack](../assets/sqli_caught.png)
+
+In addition to searching for specific attacks it is also possible to search/filter through the Threat Hunting logs by rule levels. The following query can be executed to find both the SQLi and XSS attacks:
+
+```
+rule.level > 7
+```
+
+![Demonstration of rule level filtering](../assets/rules_level_gt7.png)
+
 Tests for benign 404 errors was conducted to see if these rules were being picked up as well. Searching for a 404 error returned the expected log: 
 
 ```bash
-192.168.68.130 - - [14/Aug/2026 22:17:35] "GET /testnotfound HTTP/1.1" 404 -
+192.x.x.x - - [14/Aug/2026 22:17:35] "GET /testnotfound HTTP/1.1" 404 -
 ```
 
