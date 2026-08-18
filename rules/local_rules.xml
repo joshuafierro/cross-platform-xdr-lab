@@ -53,10 +53,32 @@
     <group>attack,web,t1190,</group>
   </rule>
 
+  <!-- Catch Potential CMDi Attack -->
+  <rule id="100061" level="12">
+    <if_sid>100002</if_sid>
+    <url type="pcre2">(?i)(?:[;&amp;|`]|\$\(|\%0a|\%0d|__|\.|\b(?:import|os|subprocess|popen)\b).*(?:whoami|id|uname|hostname|ifconfig|ip|curl|wget|ping|cat|tac|ls|sh|bash|nc|netcat|python)</url>
+    <description>Command Injection (CMDi) attack pattern detected in web request</description>
+    <mitre>
+      <id>T1059.004</id>
+    </mitre>
+    <group>attack,web,t1059.004,cwe_78,owasp_a1,</group>
+  </rule>
+
+  <!-- Catch Potential File Upload Attack --> 
+  <rule id="100070" level="10">
+    <if_sid>100002</if_sid>
+    <field name="method">^POST$</field>
+    <url type="pcre2">(?i)(?:upload|file|media|avatar).*\.(?:sh|py|pl|php|phtml|exe|elf|cgi|so|jsp|asp)</url>
+    <description>File Upload attack pattern detected. Suspicious file extension in upload web request</description>
+    <mitre>
+      <id>T1505.003</id>
+    </mitre>
+    <group>attack,web,t1505.003,cwe_434,owasp_a4,</group>
+  </rule>
+
 </group>
 
 <group name="sysmon,">
-	
   <rule id="255000" level="12">
     <if_group>sysmon_event1</if_group>
     <field name="sysmon.image">\\powershell.exe||\\.ps1||\\.ps2</field>

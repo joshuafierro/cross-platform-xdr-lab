@@ -139,7 +139,7 @@ Additionally specific rules were created to catch generic 404 and 500 errors alo
 
 ## Detection Engineering & Testing
 
-Once logs were being ingested by the agent from the Flask application I proceeded to run manual attacks against the web application from a separate VM. The first of which was a Reflective Cross Site Scripting attack (XSS). 
+Once logs were ingested by the agent from the Flask server I proceeded to run manual attacks against the web application from a separate VM. The first of which was a Reflective Cross Site Scripting attack (XSS). 
 
 After waiting a minute for the logs to propagate, I navigated to the **Wazuh Threat Intelligence** dashboard and searched the **Events** for the attack:
 
