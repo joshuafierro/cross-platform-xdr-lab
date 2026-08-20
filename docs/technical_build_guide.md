@@ -195,3 +195,53 @@ Configuring the following rule allows for the detection of suspicious processes 
 ![Wazuh Log of Suspicious Powershell Spawn ](../assets/mal_powershell_log.png)
 
  ![Log Details of Suspicious Powershell Spawn](../assets/mal_powershell_log_details.png)
+
+### Detecting Persistence Techniques 
+
+Wazuh provides built-in rules for Windows based machines that assist in detecting common methods attackers use for the purpose of maintaining access to a compromised endpoint even after reboots, logouts, or other interruptions. This is commonly referred to as Persistence Techniques. A couple of these techniques were performed in a controlled manner to ensure these rules were being triggered. 
+
+These simulated persistence techniques are motivated by a threat actors desire to maintain access to the victim's machine. For example, scheduling a task/job allows for an attacker to maintain access to the target machine at a given time or to schedule malicious software to execute a given interval whether for data exfiltration, privilege escalation, etc. Additionally creating user accounts with higher permissions allows a threat actor to maintain access to the endpoint by without needing remote access tools. 
+
+The first attack vector tested was the use of Scheduled Task/Jobs. To properly perform the test the following command needed to be executed on Endpoint B via PowerShell with Administrator privileges: 
+
+```powershell
+schtasks /create /tn "T1053_005" /sc onlogon /tr "cmd.exe /c calc.exe"
+```
+
+This somewhat harmless script schedules a task with the custom name of "T1053_005" (the MITRE ATT&CK id for [Scheduled Task/Job: Scheduled Task](https://attack.mitre.org/techniques/T1053/005/)) that upon user logon the calc executable is initiated. 
+
+The second test simulates a threat actor creating a user account. This attack vector falls under the MITRE ATT&CK technique [T1136](https://attack.mitre.org/techniques/T1136/). Within the same Administrator PowerShell session the following command creates a new user named "T1136" with no password:
+
+```powershell
+New-LocalUser -Name "T1136" -NoPassword
+```
+
+![Testing Windows Attack Vectors](../assets/testing_attack_vectors.png)
+
+Once executed these processes are logged within the Wazuh Manager and can be observed under the Threat Intelligence Dashboard:
+
+!["Malicious" Scheduled Task and User Creation caught and logged](../assets/catch_user_and_group_creation.png)
+
+![User Account Creation Details](../assets/user_creation_details.png)
+
+![User Account Changed ](../assets/user_changed_logs.png)
+
+With the rules in places and working as expected the final phase is to revert all changes the tests caused with the following command: 
+
+``` powershell
+schtasks /delete /tn "T1053_005" /f
+```
+
+```powershell
+Remove-LocalUser -Name "T1136"
+```
+
+![Perform cleanup and revert changes made by tests](../assets/cleanup_tests.png)
+
+These commands executed to cleanup after the tests can also be observed in the Wazuh Manager logs:
+
+![User Account Cleanup](../assets/user_cleanup.png)
+
+![User Group Cleanup](../assets/group_cleanup.png)
+
+![All Persistence Technique Test Logs](../assets/all_win_test_logs.png)
