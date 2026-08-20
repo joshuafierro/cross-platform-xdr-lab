@@ -7,6 +7,7 @@ Demonstrating the deployment and configuration of a virtualized Wazuh XDR/SIEM a
 - Wazuh
 - Wazuh Decoder/Rules
 - Hypervisor (VMware)
+- Windows 11
 - Ubuntu Linux
 - CentOS Linux
 - Docker
