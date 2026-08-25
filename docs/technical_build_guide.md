@@ -68,8 +68,6 @@ The script for executing the application was slightly altered to force it to run
 uv run flask --app main run --host=0.0.0.0 --port=5000 > /var/log/flask/access.log 2>&1 &
 ```
 
-
-
 ## Setting Up Rules and Decoder for Flask logs
 
 The vulnerable web application running is great however its logs need to be accessible in order to fulfill the purpose of this experiment. The next step was to alter the vulnerable web application to write logs to a file on the server and make sure that the user space for the wazuh manager had permission to read and access the log file and directory it is saved within.
@@ -95,7 +93,7 @@ Once the test passed all that was left was to restart the manager:
 systemctl restart wazuh-manager
 ```
 
-Additionally specific rules were created to catch generic 404 and 500 errors along with common injection attacks such as Cross Site Scripting and SQL Injection (SQLi) under their own respective ids.
+Specific rules were created to catch generic 404 and 500 errors to keep track of common web application errors. This can provide insight to the health of the application, possible logic errors/bugs within the codebase, and even attacks or reconnaissance by threat actors which could cause the application to throw errors:    
 
 ```xml
   <!-- Catch 404 Page Not Found Errors -->
@@ -115,7 +113,7 @@ Additionally specific rules were created to catch generic 404 and 500 errors alo
   </rule>
 ```
 
-
+Additionally common web application attacks were taken into consideration when developing tailored rules. The [**OWASP Top 10**](https://owasp.org/www-project-top-ten/) is a great resource which was consulted when threat modeling the Flask web application. Many applications allow for user input and the custom one utilized here is no exception. Failing to properly sanitize user input places the application at risk for common injection attacks such as Cross Site Scripting and SQL Injection (SQLi) which were accounted for under their own respective rule ids:
 
 ```xml
 <!-- Catch Potential XSS Attack -->
@@ -135,16 +133,18 @@ Additionally specific rules were created to catch generic 404 and 500 errors alo
   </rule>
 ```
 
-
-
 ## Detection Engineering & Testing
 
-Once logs were ingested by the agent from the Flask server I proceeded to run manual attacks against the web application from a separate VM. The first of which was a Reflective Cross Site Scripting attack (XSS). 
+Once logs were ingested by the agent from the Flask server I proceeded to run manual attacks against the web application from a separate VM.
 
-After waiting a minute for the logs to propagate, I navigated to the **Wazuh Threat Intelligence** dashboard and searched the **Events** for the attack:
+The first of which was a Reflective Cross Site Scripting attack (XSS). After a brief moment allowing for the logs to propagate, I navigated to the **Wazuh Threat Intelligence** dashboard and searched under **Events** for the Indicators of Compromise (IOC) of the attack:
 
 ```
 full_log="<img"
+```
+
+```
+full_log="onerror=alert(1)"
 ```
 
 This simple search returned the log containing the attack: 
@@ -155,7 +155,12 @@ This simple search returned the log containing the attack:
 
 ![XSS Caught](../assets/xss_caught.png)
 
-Alerting rules were tested for other injection attacks that were carried out such as SQLi. As expected they were also caught by the agent:
+Alerting rules were tested for other injection attacks that were carried out such as SQLi. As expected its IOC was also caught by the agent:
+
+```sql
+'SELECT * FROM usernames;-- '
+# NOTE: A single quote could also be used to test for the SQLi -> '
+```
 
 ![Caught SQLi Attack](../assets/sqli_caught.png)
 
@@ -245,3 +250,13 @@ These commands executed to cleanup after the tests can also be observed in the W
 ![User Group Cleanup](../assets/group_cleanup.png)
 
 ![All Persistence Technique Test Logs](../assets/all_win_test_logs.png)
+
+## Conclusion 
+
+The architecture establishes a mutli-component enterprise environment consisting of three virtual machines each maintaing their respective IP addresses to ensure reliable network communication with the central management service designed for the XDR-SIEM. 
+
+A key takeaway regarding the security posture is the necessity for advanced monitoring. While Windows Event Logs provide a baseline view, they are insufficient for detecting modern threats. Implementing Sysmon provides rich structured data enabling detailed tracing of process creation (including parent-child processes and command line arguments), network connections, and file integrity that default logging might miss. 
+
+The security architecture also proved effective in monitoring specialized applications. Creating dedicated decoders and rules for Flask logs, the system was able to successfully detect advanced threats targeting web services such as Cross Site Scripting (XSS) and SQL Injection (SQLi).
+
+Ultimately the successful establishment of a comprehensive XDR/SIEM relied upon combining enhanced endpoint visibility with custom application monitoring which resulted in a more robust threat detection environment.
