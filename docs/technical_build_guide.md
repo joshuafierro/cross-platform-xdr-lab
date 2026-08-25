@@ -1,12 +1,14 @@
 # Technical Build Guide
 
+## Objective
 
+The goal of this build is to establish a comprehensive XDR-SIEM designed for robust threat detection in a simulated enterprise environment by combining enhanced endpoint visibility with custom application monitoring.
 
 ## Setting Up Virtual Machines (VMs)
 
-The genesis of this project was the scaffolding of three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions which utilized few resources but were highly compatible with the XDR/SIEM of choice and other common security tools. 
+The genesis of this project was the scaffolding of three virtual machines which would each represent part of a enterprise environment. It was decided that two VMs would be Linux based and one would be a Windows 11 machine. Considering the resources of the host machine it was important to choose Linux distributions which utilized few resources but were highly compatible with the XDR-SIEM of choice and other common security tools. 
 
-Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the XDR/SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
+Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulnerable web application and **CentOS** would be the central management server for the XDR-SIEM. **Windows 11** was also chosen to be a monitored endpoint device (Endpoint B). It should be noted that each Endpoint was configured to maintain a static IP address to ensure the reliability of network communications between agents and the central management service.
 
 ### Virtual Machine Specifications 
 
@@ -16,11 +18,11 @@ Thus **Ubuntu** was chosen as an endpoint device (Endpoint A) housing the vulner
 | Windows 11       | 4GB  | 64GB    |
 | CentOS           | 10GB | 75GB    |
 
-![Network Topology and XDR/SEIM Flow Diagram](../assets/diagram.png)
+![Network Topology and XDR-SEIM Flow Diagram](../assets/diagram.png)
 
-## XDR/SIEM Scaffolding
+## XDR-SIEM Scaffolding
 
-Since the objective of this experiment includes the creation of a XDR/SIEM Detection environment it was imperative to choose an appropriate XDR/SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Defender/Sentinel was ruled out as a possible solution. That left Splunk and Wazuh. At the time of writing Splunk is a limited free SIEM solution. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. 
+Since the objective of this experiment includes the creation of a XDR-SIEM Detection environment it was imperative to choose an appropriate XDR-SIEM solution. In the previous section the desire to have a Windows 11 machine as a endpoint and CentOs as the central management server was expressed therefore Microsoft Defender/Sentinel was ruled out as a possible solution. That left Splunk and Wazuh. At the time of writing Splunk is a limited free SIEM solution. Despite having meaningful experience with Splunk this would not be acceptable for what is trying to be achieved in this experiment. 
 
 This left [Wazuh](https://wazuh.com/), an open source solution that "unifies XDR and SIEM protection by collecting deep endpoint telemetry, network logs, and cloud data into a single rule engine for cross-domain correlation and automated response". It was not only promising but would deliver the functionality needed at no cost.
 
@@ -203,9 +205,9 @@ Configuring the following rule allows for the detection of suspicious processes 
 
 ### Detecting Persistence Techniques 
 
-Wazuh provides built-in rules for Windows based machines that assist in detecting common methods attackers use for the purpose of maintaining access to a compromised endpoint even after reboots, logouts, or other interruptions. This is commonly referred to as Persistence Techniques. A couple of these techniques were performed in a controlled manner to ensure these rules were being triggered. 
+Wazuh provides built-in rules for Windows based machines that assist in detecting common methods attackers use for the purpose of maintaining access to a compromised endpoint even after reboots, logouts, or other interruptions. This is commonly referred to as Persistence Techniques. A couple of these techniques were performed in a controlled manner to ensure the rules were being triggered. 
 
-These simulated persistence techniques are motivated by a threat actors desire to maintain access to the victim's machine. For example, scheduling a task/job allows for an attacker to maintain access to the target machine at a given time or to schedule malicious software to execute a given interval whether for data exfiltration, privilege escalation, etc. Additionally creating user accounts with higher permissions allows a threat actor to maintain access to the endpoint by without needing remote access tools. 
+Simulating persistence techniques were motivated by a threat actors desire to maintain access to the victim's machine. For example, scheduling a task/job allows for an attacker to maintain access to the target machine at a given time or to schedule malicious software to execute a given interval whether for data exfiltration, privilege escalation, etc. Additionally creating user accounts with higher permissions allows a threat actor to maintain access to the endpoint by without needing remote access tools. 
 
 The first attack vector tested was the use of Scheduled Task/Jobs. To properly perform the test the following command needed to be executed on Endpoint B via PowerShell with Administrator privileges: 
 
@@ -231,7 +233,7 @@ Once executed these processes are logged within the Wazuh Manager and can be obs
 
 ![User Account Changed ](../assets/user_changed_logs.png)
 
-With the rules in places and working as expected the final phase is to revert all changes the tests caused with the following command: 
+With the rules in place and working as expected the final phase is to revert all changes the tests caused with the following command: 
 
 ``` powershell
 schtasks /delete /tn "T1053_005" /f
@@ -243,7 +245,7 @@ Remove-LocalUser -Name "T1136"
 
 ![Perform cleanup and revert changes made by tests](../assets/cleanup_tests.png)
 
-These commands executed to cleanup after the tests can also be observed in the Wazuh Manager logs:
+The commands executed for the purpose of reverting the tests can also be observed in the Wazuh Manager logs:
 
 ![User Account Cleanup](../assets/user_cleanup.png)
 
@@ -253,10 +255,10 @@ These commands executed to cleanup after the tests can also be observed in the W
 
 ## Conclusion 
 
-The architecture establishes a mutli-component enterprise environment consisting of three virtual machines each maintaing their respective IP addresses to ensure reliable network communication with the central management service designed for the XDR-SIEM. 
+The architecture establishes a mutli-component enterprise environment consisting of three virtual machines each maintaining their respective IP addresses to ensure reliable network communication with the central management service designed for the XDR-SIEM. 
 
 A key takeaway regarding the security posture is the necessity for advanced monitoring. While Windows Event Logs provide a baseline view, they are insufficient for detecting modern threats. Implementing Sysmon provides rich structured data enabling detailed tracing of process creation (including parent-child processes and command line arguments), network connections, and file integrity that default logging might miss. 
 
 The security architecture also proved effective in monitoring specialized applications. Creating dedicated decoders and rules for Flask logs, the system was able to successfully detect advanced threats targeting web services such as Cross Site Scripting (XSS) and SQL Injection (SQLi).
 
-Ultimately the successful establishment of a comprehensive XDR/SIEM relied upon combining enhanced endpoint visibility with custom application monitoring which resulted in a more robust threat detection environment.
+Ultimately the successful establishment of a comprehensive XDR-SIEM relied upon combining enhanced endpoint visibility with custom application monitoring which resulted in a more robust threat detection environment.
